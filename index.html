@@ -2,11 +2,36 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>myText</title>
+  <title>â‰ìIè¨çHãÔ</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <h1>Hello PWA</h1>
+  <h2>ÉÅÉÇ</h2>
+
+  <input id="memo" placeholder="ì¸óÕÇµÇƒÇ≠ÇæÇ≥Ç¢">
+  <button onclick="save()">ï€ë∂</button>
+  <button onclick="clearData()">çÌèú</button>
+
+  <script>
+    const KEY = 'my_memo';
+
+    // ?ñ ë≈??ÅC?éÊêîêò
+    const saved = localStorage.getItem(KEY);
+    if (saved) {
+      document.getElementById('memo').value = saved;
+    }
+
+    function save() {
+      const value = document.getElementById('memo').value;
+      localStorage.setItem(KEY, value);
+      alert('ï€ë∂ÇµÇ‹ÇµÇΩ');
+    }
+
+    function clearData() {
+      localStorage.removeItem(KEY);
+      document.getElementById('memo').value = '';
+    }
+  </script>
 
   <script>
     if ('serviceWorker' in navigator) {
