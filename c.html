@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>品德习惯打卡表</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    th:first-child, td:first-child {
+      text-align: left;
+      padding-left: 8px;
+      min-width: 80px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 6px 12px;
+    }
+  </style>
+</head>
+<body>
+
+<h3>每周品德打卡</h3>
+
+<table id="habitTable">
+  <thead>
+    <tr>
+      <th></th>
+      <th>一</th><th>二</th><th>三</th><th>四</th>
+      <th>五</th><th>六</th><th>日</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<button onclick="clearAll()">Clear</button>
+
+<script>
+  const habits = [
+    '节制','沉默','秩序','决心','节俭','勤勉','真诚',
+    '正义','中庸','整洁','冷静','贞洁','谦逊'
+  ];
+  const days = 7;
+  const STORAGE_KEY = 'habit_checklist';
+
+  const tableBody = document.querySelector('#habitTable tbody');
+
+  // 读取本地数据
+  let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+  // 生成表格
+  habits.forEach((habit, row) => {
+    const tr = document.createElement('tr');
+
+    const nameTd = document.createElement('td');
+    nameTd.textContent = `${row + 1} ${habit}`;
+    tr.appendChild(nameTd);
+
+    for (let col = 0; col < days; col++) {
+      const td = document.createElement('td');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+
+      const key = `${row}-${col}`;
+      cb.checked = !!data[key];
+
+      cb.addEventListener('change', () => {
+        data[key] = cb.checked;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      });
+
+      td.appendChild(cb);
+      tr.appendChild(td);
+    }
+
+    tableBody.appendChild(tr);
+  });
+
+  // 清空
+  function clearAll() {
+    if (!confirm('确定清空所有记录？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    document.querySelectorAll('input[type=checkbox]')
+      .forEach(cb => cb.checked = false);
+    data = {};
+  }
+</script>
+
+</body>
+</html>
