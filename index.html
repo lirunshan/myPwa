@@ -2,20 +2,19 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>‰ä“I¬H‹ï</title>
+  <title>MyPage</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <h2>ƒƒ‚</h2>
+  <h2>Memo</h2>
 
   <input id="memo" placeholder="“ü—Í‚µ‚Ä‚­‚¾‚³‚¢">
-  <button onclick="save()">•Û‘¶</button>
-  <button onclick="clearData()">íœ</button>
+  <button onclick="save()">saveData</button>
+  <button onclick="clearData()">clearData</button>
 
   <script>
     const KEY = 'my_memo';
 
-    // ?–Ê‘Å??C?æ”˜
     const saved = localStorage.getItem(KEY);
     if (saved) {
       document.getElementById('memo').value = saved;
