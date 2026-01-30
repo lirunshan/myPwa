@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>足球战术板</title>
+  <style>
+    body {
+      background: #eee;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+    }
+    canvas {
+      background: #2e7d32;
+      border: 2px solid #fff;
+      touch-action: none; /* 关键：防止页面滚动 */
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="field" width="640" height="330"></canvas>
+
+<script>
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+
+  const SCALE = 10;      // 1m = 10px
+  const RADIUS = 6;     // 球员点半径
+  let dragging = null;  // 当前拖拽的球员
+
+  // ===== 球员数据（单位：米）=====
+  const players = [
+    { x: 8,  y: 16.5, name: 'GK' },
+    { x: 20, y: 8,    name: 'DF1' },
+    { x: 20, y: 25,   name: 'DF2' },
+    { x: 20, y: 30,   name: 'DF2' },
+    { x: 40, y: 10,   name: 'FW1' },
+    { x: 40, y: 23,   name: 'FW2' }
+  ];
+
+  function m(v) {
+    return v * SCALE;
+  }
+
+  function drawField() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 外框
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, m(64), m(33));
+
+    // 中线
+    ctx.beginPath();
+    ctx.moveTo(m(32), 0);
+    ctx.lineTo(m(32), m(33));
+    ctx.stroke();
+
+    // 中圈
+    ctx.beginPath();
+    ctx.arc(m(32), m(16.5), m(6), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function drawPlayers() {
+    players.forEach(p => {
+      // 点
+      ctx.fillStyle = '#ff5252';
+      ctx.beginPath();
+      ctx.arc(m(p.x), m(p.y), RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 名字
+      ctx.fillStyle = 'white';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(p.name, m(p.x) + 8, m(p.y) - 8);
+    });
+  }
+
+  function render() {
+    drawField();
+    drawPlayers();
+  }
+
+  function getPos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const e = evt.touches ? evt.touches[0] : evt;
+    return {
+      x: (e.clientX - rect.left) / SCALE,
+      y: (e.clientY - rect.top) / SCALE
+    };
+  }
+
+  function hitTest(pos) {
+    return players.find(p => {
+      const dx = p.x - pos.x;
+      const dy = p.y - pos.y;
+      return Math.sqrt(dx * dx + dy * dy) < RADIUS / SCALE;
+    });
+  }
+
+  // ===== 事件 =====
+  canvas.addEventListener('mousedown', startDrag);
+  canvas.addEventListener('mousemove', moveDrag);
+  canvas.addEventListener('mouseup', endDrag);
+
+  canvas.addEventListener('touchstart', startDrag);
+  canvas.addEventListener('touchmove', moveDrag);
+  canvas.addEventListener('touchend', endDrag);
+
+  function startDrag(e) {
+    const pos = getPos(e);
+    dragging = hitTest(pos);
+  }
+
+  function moveDrag(e) {
+    if (!dragging) return;
+    e.preventDefault();
+
+    const pos = getPos(e);
+    dragging.x = Math.max(0, Math.min(64, pos.x));
+    dragging.y = Math.max(0, Math.min(33, pos.y));
+    render();
+  }
+
+  function endDrag() {
+    dragging = null;
+  }
+
+  render();
+</script>
+
+</body>
+</html>
