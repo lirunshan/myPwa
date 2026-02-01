@@ -81,12 +81,12 @@
 </head>
 <body>
 
-<h3>晨读</h3>
+<h3>规律作息打卡</h3>
 
 <!-- 日历挂载点 -->
 <div id="calendar"></div>
 <div class="actions">
-  <button onclick="clearAll('readBook')">Clear</button>
+  <button onclick="clearAll('my_checkin_calendar')">Clear</button>
   <button class="back-btn" onclick="location.href='index.html'">Back</button>
 </div>
 
@@ -209,7 +209,7 @@ new CheckinCalendar({
   mount: '#calendar',
   months: 3,          // 显示 3 个月
   weekStart: 0,       // 0=周日开始
-  storageKey: 'readBook'
+  storageKey: 'my_checkin_calendar'
 });
 </script>
 <script src="js/common.js"></script>
