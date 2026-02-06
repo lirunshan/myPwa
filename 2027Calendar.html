@@ -112,6 +112,23 @@ const config = {
   weekendDefaultMark: 2  // 0=无 1=圆 2=框
 };
 
+const fixedHolidays = {
+	// クリア
+	// localStorage.removeItem("calendar_marks_2026");
+	// location.reload();
+  // 1●、２■
+  "0-1": 1, // 1月1日
+  "0-2": 1, // 1月2日
+  "0-11": 1, // 1月11日
+
+  
+  "1-11": 1, // 2月11日（建国纪念日）
+  "1-23": 1,  // 2月23日（天皇诞生日）
+  
+  "2-22": 1, // 3月20日
+
+};
+
 const weekNames = ['日','月','火','水','木','金','土'];
 const storeKey = `calendar_marks_${config.year}`;
 
@@ -122,8 +139,17 @@ function createDefaultData(year) {
     const days = new Date(year, m + 1, 0).getDate();
     for (let d = 1; d <= days; d++) {
       const w = new Date(year, m, d).getDay();
+      
+      const key = `${m}-${d}`;
+      
+      // ① 指定休日优先
+      if (fixedHolidays[key] !== undefined) {
+        data[key] = fixedHolidays[key];
+        continue;
+      }
+      // ②週末
       const isWeekend = w === 0 || w === 6;
-      data[`${m}-${d}`] = isWeekend ? config.weekendDefaultMark : 0;
+      data[key] = isWeekend ? config.weekendDefaultMark : 0;
     }
   }
   return data;
@@ -142,7 +168,7 @@ function save() {
 
 /* ============== UI 渲染 ============== */
 const container = document.getElementById('calendar');
-const leftMarks = ['(19)','(18)','(22)','()','()','()','()','()','()','()','()',''];
+const leftMarks = ['(19)','(18)','(21)','(21)','(18)','(22)','(23)','(20)','(21)','(21)','(19)','(21)'];
 
 function updateMark(el, state) {
   el.querySelectorAll('.circle,.box').forEach(e => e.remove());
