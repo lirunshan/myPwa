@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>日历打卡</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/common.css" />
+  
+  <style>
+    /* ===== 页面整体 ===== */
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f1f8e9, #e3f2fd);
+    }
+
+    /* ===== 月卡片 ===== */
+    .month {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+
+    .month h2 {
+      text-align: center;
+      margin: 8px 0 6px;
+      font-size: 16px;
+    }
+
+    /* ===== 周 & 日期网格 ===== */
+    .week,
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+    }
+
+    .week {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .days {
+      gap: 6px;
+    }
+
+    /* ===== 单日格子 ===== */
+    .day {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 4px 2px;
+      min-height: 48px;
+      font-size: 12px;
+    }
+
+    /* 周六 / 周日 */
+    .day.weekend {
+      background: #eeeeee;
+    }
+
+    .day.empty {
+      background: transparent;
+    }
+
+    .day-number {
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    /* ===== checkbox ===== */
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+
+<h3>＞下蹲(30),俯卧撑(10)，仰卧起坐(10)</h3>
+
+<!-- 日历挂载点 -->
+<div id="calendar"></div>
+<div class="actions">
+  <button onclick="clearAll('checkSport')">Clear</button>
+  <button class="back-btn" onclick="location.href='index.html'">Back</button>
+</div>
+
+<script>
+/* =====================================================
+   可配置日历打卡组件
+   ===================================================== */
+class CheckinCalendar {
+  constructor(config) {
+    this.mountEl = document.querySelector(config.mount);
+    this.months = config.months || 3;
+    this.weekStart = config.weekStart || 0; // 0=周日, 1=周一
+    this.storageKey = config.storageKey || 'calendar_checkin';
+
+    this.data = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+    this.today = new Date();
+
+    this.weekNames = this.weekStart === 0
+      ? ['日','一','二','三','四','五','六']
+      : ['一','二','三','四','五','六','日'];
+
+    this.render();
+  }
+
+  save() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+  }
+
+  render() {
+    this.mountEl.innerHTML = '';
+
+    const startMonth = new Date(
+      this.today.getFullYear(),
+      this.today.getMonth() - Math.floor(this.months / 2),
+      1
+    );
+
+    for (let i = 0; i < this.months; i++) {
+      const d = new Date(
+        startMonth.getFullYear(),
+        startMonth.getMonth() + i,
+        1
+      );
+      this.renderMonth(d.getFullYear(), d.getMonth());
+    }
+  }
+
+  renderMonth(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    let startWeek = firstDay.getDay(); // 周日=0
+    if (this.weekStart === 1) {
+      startWeek = (startWeek + 6) % 7;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'month';
+
+    wrapper.innerHTML = `
+      <h2>${year}年 ${month + 1}月</h2>
+      <div class="week">
+        ${this.weekNames.map(w => `<div>${w}</div>`).join('')}
+      </div>
+      <div class="days"></div>
+    `;
+
+    const daysEl = wrapper.querySelector('.days');
+
+    // 空白占位
+    for (let i = 0; i < startWeek; i++) {
+      daysEl.appendChild(this.createDayCell());
+    }
+
+    // 日期
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      daysEl.appendChild(this.createDayCell(year, month, d));
+    }
+
+    this.mountEl.appendChild(wrapper);
+  }
+
+  createDayCell(year, month, day) {
+    const cell = document.createElement('div');
+    cell.className = 'day';
+
+    if (!day) {
+      cell.classList.add('empty');
+      return cell;
+    }
+
+    // 判断周六 / 周日
+    const weekDay = new Date(year, month, day).getDay();
+    if (weekDay === 0 || weekDay === 6) {
+      cell.classList.add('weekend');
+    }
+
+    const key = `${year}-${month + 1}-${day}`;
+    const checked = !!this.data[key];
+
+    cell.innerHTML = `
+      <div class="day-number">${day}</div>
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+    `;
+
+    const cb = cell.querySelector('input');
+    cb.addEventListener('change', () => {
+      this.data[key] = cb.checked;
+      this.save();
+    });
+
+    return cell;
+  }
+}
+
+/* =====================================================
+   初始化（日常只改这里）
+   ===================================================== */
+new CheckinCalendar({
+  mount: '#calendar',
+  months: 3,          // 显示 3 个月
+  weekStart: 0,       // 0=周日开始
+  storageKey: 'checkSportEveryDay'
+});
+</script>
+<script src="js/common.js"></script>
+</body>
+</html>
